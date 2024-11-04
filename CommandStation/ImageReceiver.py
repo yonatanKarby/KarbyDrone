@@ -1,4 +1,5 @@
 import socket
+import CameraConnectionReceiver
 
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 port = 6969
@@ -12,14 +13,7 @@ server_socket.listen()
 while(True):
     connection, client_adress = server_socket.accept()
     print(f"Connection from: {client_adress}")
-    outputFile = open(f"{client_adress[0]}.jpeg", '+bw')
-
-    while True:
-        data = connection.recv(buffer_size)
-        if not data:
-            break
-        outputFile.write(data)
-    outputFile.close()
-    connection.close()
+    handler = CameraConnectionReceiver.CameraConnectionReceiver(connection)
+    handler.Run()
 
 server_socket.close()

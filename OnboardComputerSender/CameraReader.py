@@ -1,5 +1,7 @@
 import cv2
 import socket
+import pickle
+import struct
 
 videoFeeder = cv2.VideoCapture(0)
 
@@ -7,16 +9,19 @@ def generate_frames_stream():
     ret, frame = videoFeeder.read()
     if not ret:
         return b'';
-    ret, buffer = cv2.imencode('.jpeg', frame)
-    frameData = buffer.tobytes()
-    return frameData
+    return frame
 
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server_address = ('10.0.0.21', 6969)
 
 try:
     client_socket.connect(server_address)
-    message = generate_frames_stream()
-    client_socket.sendall(message)
+    while True:
+        frame = generate_frames_stream()
+        data = pickle.dumps(frame) ### new code
+        print(len(data))
+        dataLengthAsBytes = struct.pack("I", len(data))
+        client_socket.sendall(dataLengthAsBytes+data) ### new code
+        print("Sent frame")
 finally:
     client_socket.close()
